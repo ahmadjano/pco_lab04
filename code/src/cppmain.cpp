@@ -50,12 +50,12 @@ int cmain()
     // Vous devrez utiliser cette fonction pour la section partagée pour aiguiller les locos
     // sur le bon parcours (par exemple à la sortie de la section partagée) vous pouvez l'
     // appeler depuis vos thread des locos par ex.
-    diriger_aiguillage(1,  TOUT_DROIT, 0);
-    diriger_aiguillage(2,  DEVIE     , 0);
+    diriger_aiguillage(1,  DEVIE, 0);
+    diriger_aiguillage(2,  TOUT_DROIT     , 0);
     diriger_aiguillage(3,  DEVIE     , 0);
     diriger_aiguillage(4,  TOUT_DROIT, 0);
     diriger_aiguillage(5,  TOUT_DROIT, 0);
-    diriger_aiguillage(6,  TOUT_DROIT, 0);
+    diriger_aiguillage(6,  DEVIE, 0);
     diriger_aiguillage(7,  TOUT_DROIT, 0);
     diriger_aiguillage(8,  DEVIE     , 0);
     diriger_aiguillage(9,  DEVIE     , 0);
@@ -83,14 +83,14 @@ int cmain()
     // Loco 0
     // Position de départ
     locoA.fixerPosition(23, 24);
-    int enterSectionA = 6;
-    int leaveSectionA = 33;
+    static int enterSectionA = 6;
+    static int leaveSectionA = 33;
 
     // Loco 1
     // Position de départ
     locoB.fixerPosition(20, 21);
-    int enterSectionB = 3;
-    int leaveSectionB = 29;
+    static int enterSectionB = 2;
+    static int leaveSectionB = 30;
 
     /***********
      * Message *
@@ -107,9 +107,9 @@ int cmain()
     std::shared_ptr<SynchroInterface> sharedSection = std::make_shared<Synchro>();
 
     // Création du thread pour la loco 0
-    std::unique_ptr<Launchable> locoBehaveA = std::make_unique<LocomotiveBehavior>(locoA, sharedSection /*, autres paramètres ...*/);
+    std::unique_ptr<Launchable> locoBehaveA = std::make_unique<LocomotiveBehavior>(locoA, sharedSection, enterSectionA, leaveSectionA /*, autres paramètres ...*/);
     // Création du thread pour la loco 1
-    std::unique_ptr<Launchable> locoBehaveB = std::make_unique<LocomotiveBehavior>(locoB, sharedSection /*, autres paramètres ...*/);
+    std::unique_ptr<Launchable> locoBehaveB = std::make_unique<LocomotiveBehavior>(locoB, sharedSection, enterSectionB, leaveSectionB /*, autres paramètres ...*/);
 
     // Lanchement des threads
     afficher_message(qPrintable(QString("Lancement thread loco A (numéro %1)").arg(locoA.numero())));
