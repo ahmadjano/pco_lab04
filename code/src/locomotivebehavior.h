@@ -24,10 +24,11 @@ public:
      * \brief locomotiveBehavior Constructeur de la classe
      * \param loco la locomotive dont on représente le comportement
      */
-    LocomotiveBehavior(Locomotive& loco, std::shared_ptr<SynchroInterface> sharedSection, int enterSection, int leaveSection /*, autres paramètres éventuels */) : loco(loco), sharedSection(sharedSection) {
+    LocomotiveBehavior(Locomotive& loco, std::shared_ptr<SynchroInterface> sharedSection, int enterSection, int leaveSection, int station /*, autres paramètres éventuels */) : loco(loco), sharedSection(sharedSection) {
         // Eventuel code supplémentaire du constructeur
         this->enterSection = enterSection;
         this->leaveSection = leaveSection;
+        this->station = station;
     }
 
 protected:
@@ -63,6 +64,7 @@ protected:
      */
     int enterSection;
     int leaveSection;
+    int station;
 };
 
 #endif // LOCOMOTIVEBEHAVIOR_H

@@ -17,6 +17,7 @@
 #include "locomotive.h"
 #include "ctrain_handler.h"
 #include "synchrointerface.h"
+#include <thread>
 
 /**
  * @brief La classe Synchro implémente l'interface SynchroInterface qui
@@ -32,6 +33,7 @@ public:
      */
     Synchro() {
         // TODO
+
     }
 
     /**
@@ -43,6 +45,18 @@ public:
      */
     void access(Locomotive &loco) override {
         // TODO
+        loco.arreter();
+        sectionPartagee.acquire();
+
+        if(loco.numero() == 20){
+            diriger_aiguillage(1,  TOUT_DROIT, 0);
+            diriger_aiguillage(22, TOUT_DROIT, 0);
+
+        } else {
+            diriger_aiguillage(1,  DEVIE, 0);
+            diriger_aiguillage(22, DEVIE, 0);
+        }
+        loco.demarrer();
 
         // Exemple de message dans la console globale
         afficher_message(qPrintable(QString("The engine no. %1 accesses the shared section.").arg(loco.numero())));
@@ -57,6 +71,7 @@ public:
      */
     void leave(Locomotive& loco) override {
         // TODO
+        sectionPartagee.release();
 
         // Exemple de message dans la console globale
         afficher_message(qPrintable(QString("The engine no. %1 leaves the shared section.").arg(loco.numero())));
@@ -72,9 +87,16 @@ public:
      */
     void stopAtStation(Locomotive& loco) override {
         // TODO
-
-        // Exemple de message dans la console globale
+        loco.arreter();
         afficher_message(qPrintable(QString("The engine no. %1 arrives at the station.").arg(loco.numero())));
+        mutexGare.acquire();
+        nbTrainGare ++;
+        mutexGare.release();
+        waitAtStation();
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        afficher_message(qPrintable(QString("The engine no. %1 leaves the station.").arg(loco.numero())));
+        loco.demarrer();
+
     }
 
     /* A vous d'ajouter ce qu'il vous faut */
@@ -82,6 +104,24 @@ public:
 private:
     // Méthodes privées ...
     // Attribut privés ...
+    PcoSemaphore sectionPartagee{1};
+    PcoSemaphore attendreGare{0};
+    PcoSemaphore mutexGare{1};
+    int nbTrainGare = 0;
+
+    void waitAtStation() {
+        mutexGare.acquire();
+        if(nbTrainGare == 2){
+            nbTrainGare = 0;
+            mutexGare.release();
+            attendreGare.release();
+
+        } else {
+            mutexGare.release();
+            attendreGare.acquire();
+        }
+
+    }
 };
 
 
