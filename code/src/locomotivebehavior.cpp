@@ -27,17 +27,16 @@ void LocomotiveBehavior::run()
         // On attend qu'une locomotive arrive sur le contact.
         // Pertinent de faire ça dans les deux threads? Pas sûr...
         attendre_contact(this->enterSection);
-        sharedSection->access(loco);
         loco.afficherMessage(QString("J'ai atteint le contact %1").arg(this->enterSection));
+        sharedSection->access(loco);
 
         attendre_contact(this->leaveSection);
-        sharedSection->leave(loco);
         loco.afficherMessage(QString("J'ai atteint le contact %1").arg(this->leaveSection));
+        sharedSection->leave(loco);
 
         attendre_contact(this->station);
-        sharedSection->stopAtStation(loco);
         loco.afficherMessage(QString("J'ai atteint le contact %1").arg(this->station));
-
+        sharedSection->stopAtStation(loco);
     }
 }
 

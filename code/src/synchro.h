@@ -19,6 +19,8 @@
 #include "synchrointerface.h"
 #include <thread>
 
+
+
 /**
  * @brief La classe Synchro implémente l'interface SynchroInterface qui
  * propose les méthodes liées à la section partagée.
@@ -46,15 +48,21 @@ public:
     void access(Locomotive &loco) override {
         // TODO
         loco.arreter();
-        sectionPartagee.acquire();
 
         if(loco.numero() == 20){
+            prioriteLocoA.acquire();
+            sectionPartagee.acquire();
+
             diriger_aiguillage(1,  TOUT_DROIT, 0);
             diriger_aiguillage(22, TOUT_DROIT, 0);
 
         } else {
+            prioriteLocoB.acquire();
+            sectionPartagee.acquire();
+
             diriger_aiguillage(1,  DEVIE, 0);
             diriger_aiguillage(22, DEVIE, 0);
+
         }
         loco.demarrer();
 
@@ -71,6 +79,12 @@ public:
      */
     void leave(Locomotive& loco) override {
         // TODO
+        if(loco.numero() == 20){
+            prioriteLocoB.release();
+        } else {
+            prioriteLocoA.release();
+        }
+
         sectionPartagee.release();
 
         // Exemple de message dans la console globale
@@ -91,12 +105,28 @@ public:
         afficher_message(qPrintable(QString("The engine no. %1 arrives at the station.").arg(loco.numero())));
         mutexGare.acquire();
         nbTrainGare ++;
-        mutexGare.release();
+
+
+        if(loco.numero() == 20){
+            if(nbTrainGare == 2){ // Si premier déjà passé
+                prioriteLocoB.acquire();
+            } else {
+                prioriteLocoB.release();
+            }
+            mutexGare.release();
+        } else {
+            if(nbTrainGare == 2){
+                prioriteLocoA.acquire();
+            } else {
+                prioriteLocoA.release();
+            }
+            mutexGare.release();
+        }
+
         waitAtStation();
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        afficher_message(qPrintable(QString("The engine no. %1 leaves the station.").arg(loco.numero())));
         loco.demarrer();
-
+        afficher_message(qPrintable(QString("The engine no. %1 leaves the station.").arg(loco.numero())));
     }
 
     /* A vous d'ajouter ce qu'il vous faut */
@@ -108,6 +138,8 @@ private:
     PcoSemaphore attendreGare{0};
     PcoSemaphore mutexGare{1};
     int nbTrainGare = 0;
+    PcoSemaphore prioriteLocoA {1};
+    PcoSemaphore prioriteLocoB {1};
 
     void waitAtStation() {
         mutexGare.acquire();
@@ -119,6 +151,7 @@ private:
         } else {
             mutexGare.release();
             attendreGare.acquire();
+
         }
 
     }
