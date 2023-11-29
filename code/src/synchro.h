@@ -33,10 +33,7 @@ public:
      * @brief Synchro Constructeur de la classe qui représente la section partagée.
      * Initialisez vos éventuels attributs ici, sémaphores etc.
      */
-    Synchro() {
-        // TODO
-
-    }
+    Synchro() : sectionPartagee(1), attendreGare(0), mutexGare(1) ,prioriteLocoA(1), prioriteLocoB(1), nbTrainGare(0) {}
 
     /**
      * @brief access Méthode à appeler pour accéder à la section partagée
@@ -46,9 +43,9 @@ public:
      * @param loco La locomotive qui essaie accéder à la section partagée
      */
     void access(Locomotive &loco) override {
-        // TODO
         loco.arreter();
 
+        // Si locomotive B
         if(loco.numero() == 20){
             prioriteLocoA.acquire();
             sectionPartagee.acquire();
@@ -78,7 +75,7 @@ public:
      * @param loco La locomotive qui quitte la section partagée
      */
     void leave(Locomotive& loco) override {
-        // TODO
+
         if(loco.numero() == 20){
             prioriteLocoB.release();
         } else {
@@ -100,7 +97,6 @@ public:
      * @param loco La locomotive qui doit attendre à la gare
      */
     void stopAtStation(Locomotive& loco) override {
-        // TODO
         loco.arreter();
         afficher_message(qPrintable(QString("The engine no. %1 arrives at the station.").arg(loco.numero())));
         mutexGare.acquire();
@@ -129,18 +125,23 @@ public:
         afficher_message(qPrintable(QString("The engine no. %1 leaves the station.").arg(loco.numero())));
     }
 
-    /* A vous d'ajouter ce qu'il vous faut */
-
 private:
     // Méthodes privées ...
     // Attribut privés ...
-    PcoSemaphore sectionPartagee{1};
-    PcoSemaphore attendreGare{0};
-    PcoSemaphore mutexGare{1};
+    PcoSemaphore sectionPartagee;
+    PcoSemaphore attendreGare;
+    PcoSemaphore mutexGare;
+    PcoSemaphore prioriteLocoA;
+    PcoSemaphore prioriteLocoB;
     int nbTrainGare = 0;
-    PcoSemaphore prioriteLocoA {1};
-    PcoSemaphore prioriteLocoB {1};
 
+    /**
+     * @brief Fonction qui gère l'attente des locomotives à la gare.
+     *
+     * Cette fonction met en attente la locomotive à la gare en fonction des conditions définies
+     * par le nombre de trains présents. Elle assure également la libération du sémaphore
+     * pour permettre à la locomotive suivante de passer une fois la condition remplie.
+     */
     void waitAtStation() {
         mutexGare.acquire();
         if(nbTrainGare == 2){

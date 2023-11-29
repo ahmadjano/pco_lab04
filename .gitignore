@@ -1,2 +1,5 @@
 build-QtrainSimStudent-Desktop-Debug/
 code/QtrainSimStudent.pro.user
+code/QtrainSimStudent.pro*
+rendu.tar.gz
+rapport.pdf
